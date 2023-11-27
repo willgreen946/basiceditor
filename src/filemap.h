@@ -8,7 +8,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-struct filemap;
+struct filemap {
+	size_t linemax;
+	off_t filesize;
+	int filedescriptor;
+	char ** linevector;
+	const char * filename;
+};
 
 int filemapinit(struct filemap *, const char *);
 

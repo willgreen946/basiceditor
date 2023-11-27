@@ -7,14 +7,6 @@
 #include "fdctrl.h"
 #include "filemap.h"
 
-struct filemap {
-	size_t linemax;
-	off_t filesize;
-	int filedescriptor;
-	char ** linevector;
-	const char * filename;
-};
-
 int
 filemapinit(struct filemap * fm, const char * file)
 {

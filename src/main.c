@@ -7,34 +7,13 @@
 #include <limits.h>
 #include <unistd.h>
 #include "filemap.h"
-
-struct filemap {
-	size_t linemax;
-	size_t filesize;
-	int filedescriptor;
-	char ** linevector;
-	const char * filename;
-};
-
-int requestline(struct filemap *, const char *);
-int writefile(struct filemap *, const char *);
-
-struct commandmap {
-	const char * cmd;
-	int (*fn) (struct filemap *, const char *);
-};
-
-struct commandmap cmdmap[] = {
-	{ "req", requestline },
-	{ "write", writefile }, 
-};
+#include "commands.h"
 
 static int help(const char *);
 static int setup(const char **);
 static int scanargs(const char **);
 static int eventloop(struct filemap *);
-static int parseline(struct filemap *, const char *);
-static void putline(size_t, size_t, const char **);
+static int parseline(struct filemap *, char *);
 
 int
 main(int argc, const char ** argv)
@@ -120,12 +99,12 @@ static int
 eventloop(struct filemap * fm)
 {
 	char buf[1024];
-	ssize_t rv_read;
+	ssize_t rvread;
 
 	for (;;) {
 		write(STDOUT_FILENO, ">", 1);
 
-		if ((rv_read = read(STDIN_FILENO, buf, 1024)) < 0) {
+		if ((rvread = read(STDIN_FILENO, buf, 1024)) < 0) {
 			fprintf(stderr,
 				"ERROR: %s : %s : %s\n",
 				__FILE__, __func__, strerror(errno));
@@ -145,51 +124,24 @@ eventloop(struct filemap * fm)
 }
 
 static int 
-parseline(struct filemap * fm, const char * s)
+parseline(struct filemap * fm, char * s)
 {
-	size_t i;
-	char cmd[256];
+	char ** p;
+	char * argv[256];
+
+	s[strlen(s) - 1] = '\0';
 
 	/*
-	 * Find the first space
+	 * Split up string by whitespace
 	 */
-	do {
-		strncat(cmd, &*s, 1);
-	} while (*s++ && *s != ' ');
-
-	for (i = 0; cmdmap[i].cmd; i++) {
-		if (!strncmp(cmd, cmdmap[i].cmd, strlen(cmdmap[i].cmd))) 
-			return cmdmap[i].fn(fm, s);
+	for (p = argv; p < &argv[255] && 
+		(*p = strsep(&s, " \t"));) {
+		if (**p)
+			p++;
 	}
 
-	fputs("No such command\n", stderr);
-	return 0;
-}
+	if (iscommand(fm, (const char **) argv) < 0) 
+		fputs("No such command\n", stderr);
 
-/*
- * Tries to print out specified line
- */
-static void
-putline(size_t lineno, size_t linemax, const char ** fm)
-{
-	if (!fm[lineno] || lineno > linemax || lineno > ULONG_MAX) {
-		fprintf(stderr, "No such line %lu!\n", lineno);
-		return;
-	}
-
-	fputs(fm[lineno], stdout);
-}
-
-int
-requestline(struct filemap * fm, const char * args)
-{
-	if (fm || args) {}
-	return 0;
-}
-
-int
-writefile(struct filemap * fm, const char * args)
-{
-	if (fm || args) {}
 	return 0;
 }
