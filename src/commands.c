@@ -11,7 +11,7 @@ struct commandmap cmdmap[] = {
 signed int
 cmdprint(struct filemap * fm, const char ** argv)
 {
-	size_t ln;
+	size_t ln = 0;
 
 	while (*++argv) {
 		if (strspn(*argv, "+-.1234567890") != strlen(*argv)) {
@@ -40,7 +40,7 @@ iscommand(struct filemap * fm, const char ** argv)
 {
 	size_t i;
 
-	if (!argv)
+	if (!argv || !argv[0])
 		return -1;
 
 	for (i = 0; cmdmap[i].cmd; i++) {

@@ -98,27 +98,46 @@ scanargs(const char ** argv)
 static int
 eventloop(struct filemap * fm)
 {
-	char buf[1024];
 	ssize_t rvread;
+	char * buf = (char *) 0;
+
+	if (!(buf = (char *) malloc(256))) {
+		fprintf(stderr,
+			"ERROR: %s : %s\n",
+			__func__, "bad alloc");
+		return 1;
+	}
 
 	for (;;) {
+		memset(buf, 0, strlen(buf));
+
 		write(STDOUT_FILENO, ">", 1);
 
-		if ((rvread = read(STDIN_FILENO, buf, 1024)) < 0) {
+		if ((rvread = read(STDIN_FILENO, buf, 255)) < 0) {
 			fprintf(stderr,
-				"ERROR: %s : %s : %s\n",
-				__FILE__, __func__, strerror(errno));
+				"ERROR: %s : %s\n",
+				__func__, strerror(errno));
 			return 1;
 		}
 
 		if (*buf) {
-			if (!strncmp(buf, "quit", 4))
+			if (!strncmp(buf, "quit", 4)) {
+				if (buf)
+					free(buf);
 				return 0;
+			}
 
-			if (parseline(fm, buf))
-				return 2;
+			if (parseline(fm, buf)) {
+				if (buf)
+					free(buf);
+				return 1;
+			}
 		}	
+
 	}
+
+	if (buf)
+		free(buf);
 
 	return 0;
 }
