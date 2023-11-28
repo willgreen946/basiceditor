@@ -25,4 +25,6 @@ all:
 	$(CC) $(CFLAGS) src/main.c -c
 	$(CC) $(CFLAGS) src/filemap.c -c
 	$(CC) $(CFLAGS) src/fdctrl.c -c
-	$(CC) $(CFLAGS) main.o fdctrl.o filemap.o
+	$(CC) $(CFLAGS) src/commands.c -c
+	$(CC) $(CFLAGS) src/conversion.c -c
+	$(CC) $(CFLAGS) main.o fdctrl.o conversion.o commands.o filemap.o
