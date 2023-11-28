@@ -6,7 +6,9 @@
 #include <limits.h>
 #include "filemap.h"
 
-enum { COMMANDMAPMAX = 3 };
+enum { COMMANDMAPMAX = 4 };
+
+signed int cmdinfo(struct filemap * fm, const char **);
 
 signed int cmdhead(struct filemap * fm, const char **);
 

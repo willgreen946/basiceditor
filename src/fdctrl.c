@@ -38,7 +38,7 @@ fdgetsize(int fd)
 }
 
 char **
-fdreadfile(int fd, off_t fsize, const char * mode)
+fdreadfile(int fd, off_t fsize, size_t * lmax, const char * mode)
 {
 	size_t i;
 	size_t buflen;
@@ -93,17 +93,18 @@ fdreadfile(int fd, off_t fsize, const char * mode)
 		}
 
 		memset(buf, 0, buflen);
+		*lmax = i + 1;
 	}
 
 	/*
 	 * Destroy file pointer
 	 */
-	if (fclose(fp) < 0) {
+	/*if (fclose(fp) < 0) {
 		fprintf(stderr,
 			"ERROR: %s : %s\n",
 			__func__, strerror(errno));
 		return (char **) 0;
-	}	
+	}*/
 
 	if (buf)
 		free(buf);

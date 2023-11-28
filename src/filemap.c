@@ -32,7 +32,7 @@ filemapinit(struct filemap * fm, const char * file)
 	 * Read the file into memory
 	 */
 	if (!(fm->linevector = 
-		fdreadfile(fm->filedescriptor, fm->filesize, "r+w")))
+		fdreadfile(fm->filedescriptor, fm->filesize, &fm->linemax, "r+w")))
 		return 1;
 
 	return 0;
@@ -61,7 +61,8 @@ filemapdestroy(struct filemap * fm)
 		for (i = 0; fm->linevector[i]; i++) {
 			free(fm->linevector[i]);
 
-		free(fm->linevector);
+		if (fm->linevector)
+			free(fm->linevector);
 	}
 
 	fm->filesize = 0;

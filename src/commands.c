@@ -9,7 +9,21 @@ struct commandmap cmdmap[COMMANDMAPMAX] = {
 	{ "print", cmdprint },
 	{ "range", cmdrange },
 	{ "head", cmdhead },
+	{ "info", cmdinfo },
 };
+
+signed int
+cmdinfo(struct filemap * fm, const char ** argv)
+{
+	if (argv[1])
+		fputs("Command info takes no arguments ...\n", stderr);
+
+	fprintf(stdout,
+		"%s\nsize - %lu\nlines - %lu\n",
+		fm->filename, fm->filesize, fm->linemax);
+
+	return 0;
+}
 
 /*
  * Prints first ten lines of a file
@@ -24,7 +38,6 @@ cmdhead(struct filemap * fm, const char ** argv)
 
 	return cmdrange(fm, (const char **) av);
 }
-
 
 /*
  * Prints out lines of a file from a range
@@ -61,7 +74,7 @@ cmdrange(struct filemap * fm, const char ** argv)
 
 	for (i = (start - 1); i < (end - 1); i++) {
 		if (fm->linevector[i])
-			fputs(fm->linevector[i], stdout);
+			fprintf(stdout, "%lu: %s", i, fm->linevector[i]);
 	}
 
 	return 0;
@@ -80,10 +93,11 @@ cmdprint(struct filemap * fm, const char ** argv)
 			return 0;
 
 		if (fm->linevector[ln - 1])
-			fputs(fm->linevector[ln - 1], stdout);
+			fprintf(stdout, "%lu: %s", ln, fm->linevector[ln - 1]);
 
 		else {
-			fprintf(stderr, "ERROR: %lu no such line\n", ln);
+			fprintf(stderr,
+				"ERROR: %s : %lu no such line\n", __func__, ln);
 			return 0;
 		}
 	}
