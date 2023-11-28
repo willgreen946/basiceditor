@@ -11,6 +11,9 @@ struct commandmap cmdmap[COMMANDMAPMAX] = {
 	{ "head", cmdhead },
 };
 
+/*
+ * Prints first ten lines of a file
+ */
 signed int
 cmdhead(struct filemap * fm, const char ** argv)
 {
@@ -22,6 +25,10 @@ cmdhead(struct filemap * fm, const char ** argv)
 	return cmdrange(fm, (const char **) av);
 }
 
+
+/*
+ * Prints out lines of a file from a range
+ */
 signed int
 cmdrange(struct filemap * fm, const char ** argv)
 {
@@ -29,7 +36,7 @@ cmdrange(struct filemap * fm, const char ** argv)
 	size_t end = 0;
 	size_t start = 0;
 
-	if (!argv[1] || !argv[2] || argv[3]) {
+	if (!argv[1] || !argv[2]) {
 		fputs("Expected two arguments\n", stderr);
 		return 0;
 	}
@@ -60,6 +67,9 @@ cmdrange(struct filemap * fm, const char ** argv)
 	return 0;
 }
 
+/*
+ * Prints out a line from a file
+ */
 signed int
 cmdprint(struct filemap * fm, const char ** argv)
 {
