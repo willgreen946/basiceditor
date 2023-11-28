@@ -72,9 +72,9 @@ cmdrange(struct filemap * fm, const char ** argv)
 		return 0;
 	}
 
-	for (i = (start - 1); i < (end - 1); i++) {
+	for (i = (start - 1); i < end; i++) {
 		if (fm->linevector[i])
-			fprintf(stdout, "%lu: %s", i, fm->linevector[i]);
+			fprintf(stdout, "%lu: %s", i + 1, fm->linevector[i]);
 	}
 
 	return 0;
