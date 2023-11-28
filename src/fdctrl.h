@@ -17,6 +17,6 @@ off_t fdgetsize(int);
 /*
  * Reads in a file into memory line by line
  */
-char ** fdreadfile(int);
+char ** fdreadfile(int, off_t, const char *);
 
 #endif /* __FDCTRL_H__ */

@@ -38,79 +38,75 @@ fdgetsize(int fd)
 }
 
 char **
-fdreadfile(int fd)
+fdreadfile(int fd, off_t fsize, const char * mode)
 {
-	char c;
 	size_t i;
-	off_t size;
-	size_t linelen;
-	ssize_t rvread;
+	size_t buflen;
+	FILE * fp = (FILE *) 0;
 	char * buf = (char *) 0;
-	char ** lines = (char **) 0;
-
-	if ((size = fdgetsize(fd)) < 0)
-		return (char **) 0;
+	char ** linev = (char **) 0;
 
 	/*
-	 * Allocate the memory for the buffer
+	 * Allocate memory for the line vector
 	 */
-	if (!(buf = (char *) malloc((size_t) size))) {
+	if (!(linev = (char **) malloc((size_t) fsize))) {
 		fprintf(stderr,
 			"ERROR: %s : %s\n",
 			__func__, "bad alloc");
 		return (char **) 0;
 	}
 
-	memset(buf, 0, (size_t) size);
+	/*
+	 * Allocate memory for buffer
+	 */
+	if (!(buf = (char *) malloc((size_t) fsize))) {
+		fprintf(stderr,
+			"ERROR: %s : %s\n",
+			__func__, "bad alloc");
+		return (char **) 0;
+	}
 
 	/*
-	 * Read file char by char
+	 * Create file pointer
 	 */
-	for (i = 0; (rvread = read(fd, &c, 1));) {
-		if (rvread < 0) {
+	if (!(fp = fdopen(fd, mode))) {
+		fprintf(stderr,
+			"ERROR: %s : %s\n",
+			__func__, strerror(errno));
+		return (char **) 0;
+	}
+
+	/*
+	 * Read from the file pointer
+	 */
+	for (i = 0; fgets(buf, (int) fsize, fp); i++) {
+		if (!buf)
+			return (char **) 0;
+
+		buflen = strnlen(buf, (size_t) fsize);
+
+		if (!(linev[i] = strndup(buf, buflen))) {
 			fprintf(stderr,
 				"ERROR: %s : %s\n",
 				__func__, strerror(errno));
 			return (char **) 0;
 		}
 
-		/*
-		 * Allocate memory for *line[]
-		 */
-		if (!lines) {
-			if (!(lines = (char **) malloc((size_t) size))) {
-				fprintf(stderr,
-					"ERROR: %s : %s\n",
-					__func__, "bad alloc");
-				return (char **) 0;
-			}
-		}
-
-		/*
-		 * '\n' == EOL
-		 */
-		if (c == '\n') {
-			strncat(buf, &c, 1);
-
-			linelen = strnlen(buf, (size_t) size);
-
-			if (!(lines[i++] = strndup(buf, linelen))) {
-				fprintf(stderr,
-					"ERROR: %s : %s\n",
-					__func__, strerror(errno));
-				return (char **) 0;
-			}
-
-			/*
-			 * Stops malloc from allocating gigabytes
-			 */
-			memset(buf, 0, (size_t) size);
-		} else
-			strncat(buf, &c, 1);
+		memset(buf, 0, buflen);
 	}
+
+	/*
+	 * Destroy file pointer
+	 */
+	if (fclose(fp) < 0) {
+		fprintf(stderr,
+			"ERROR: %s : %s\n",
+			__func__, strerror(errno));
+		return (char **) 0;
+	}	
 
 	if (buf)
 		free(buf);
 
-	return lines;
+	return linev;
 }

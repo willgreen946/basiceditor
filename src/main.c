@@ -1,11 +1,8 @@
 #include <stdio.h>
-#include <ctype.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include <limits.h>
-#include <unistd.h>
 #include "filemap.h"
 #include "commands.h"
 
@@ -98,46 +95,24 @@ scanargs(const char ** argv)
 static int
 eventloop(struct filemap * fm)
 {
-	ssize_t rvread;
-	char * buf = (char *) 0;
-
-	if (!(buf = (char *) malloc(256))) {
-		fprintf(stderr,
-			"ERROR: %s : %s\n",
-			__func__, "bad alloc");
-		return 1;
-	}
+	char buf[256];
 
 	for (;;) {
-		memset(buf, 0, strlen(buf));
-
-		write(STDOUT_FILENO, ">", 1);
-
-		if ((rvread = read(STDIN_FILENO, buf, 255)) < 0) {
+		if (!fgets(buf, 255, stdin)) {
 			fprintf(stderr,
 				"ERROR: %s : %s\n",
-				__func__, strerror(errno));
+				__func__, "fgets");
 			return 1;
 		}
 
 		if (*buf) {
-			if (!strncmp(buf, "quit", 4)) {
-				if (buf)
-					free(buf);
+			if (!strncmp(buf, "quit", 4))
 				return 0;
-			}
 
-			if (parseline(fm, buf)) {
-				if (buf)
-					free(buf);
+			if (parseline(fm, buf))
 				return 1;
-			}
 		}	
-
 	}
-
-	if (buf)
-		free(buf);
 
 	return 0;
 }

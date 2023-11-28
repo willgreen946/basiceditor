@@ -6,6 +6,12 @@
 #include <limits.h>
 #include "filemap.h"
 
+enum { COMMANDMAPMAX = 3 };
+
+signed int cmdhead(struct filemap * fm, const char **);
+
+signed int cmdrange(struct filemap * fm, const char **);
+
 /*
  * Tries to convert string to integer and print the line
  */

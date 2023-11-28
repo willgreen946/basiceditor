@@ -3,10 +3,62 @@
 #include <limits.h>
 #include "filemap.h"
 #include "commands.h"
+#include "conversion.h"
 
-struct commandmap cmdmap[] = {
+struct commandmap cmdmap[COMMANDMAPMAX] = {
 	{ "print", cmdprint },
+	{ "range", cmdrange },
+	{ "head", cmdhead },
 };
+
+signed int
+cmdhead(struct filemap * fm, const char ** argv)
+{
+	const char * av[3] = { "range", "1", "10" };
+
+	if (argv[1])
+		fputs("Command head takes no arguments ...\n", stderr);
+
+	return cmdrange(fm, (const char **) av);
+}
+
+signed int
+cmdrange(struct filemap * fm, const char ** argv)
+{
+	size_t i;
+	size_t end = 0;
+	size_t start = 0;
+
+	if (!argv[1] || !argv[2] || argv[3]) {
+		fputs("Expected two arguments\n", stderr);
+		return 0;
+	}
+
+	if (!convsize_t(&start, argv[1]))
+		return 0;
+
+	if (!convsize_t(&end, argv[2]))
+		return 0;
+
+	if (!fm->linevector[end - 1]) {
+		fprintf(stderr,
+			"ERROR: %s : %lu no such line\n", __func__, end);
+		return 0;
+	}
+
+	if (!fm->linevector[start - 1]) {
+		fprintf(stderr,
+			"ERROR: %s : %lu no such line\n", __func__, start);
+		return 0;
+	}
+
+	for (i = (start - 1); i < (end - 1); i++) {
+		if (fm->linevector[i])
+			fputs(fm->linevector[i], stdout);
+	}
+
+	return 0;
+}
 
 signed int
 cmdprint(struct filemap * fm, const char ** argv)
@@ -14,20 +66,14 @@ cmdprint(struct filemap * fm, const char ** argv)
 	size_t ln = 0;
 
 	while (*++argv) {
-		if (strspn(*argv, "+-.1234567890") != strlen(*argv)) {
-			fprintf(stderr,
-				"ERROR: %s : is not numeric\n",
-				*argv);
+		if (!convsize_t(&ln, *argv))
 			return 0;
-		}
 
-		ln = (size_t) strtol(*argv, (char **) 0, 10) - 1;
-
-		if (fm->linevector[ln])
-			fputs(fm->linevector[ln], stdout);
+		if (fm->linevector[ln - 1])
+			fputs(fm->linevector[ln - 1], stdout);
 
 		else {
-			fprintf(stderr, "ERROR: %lu : No such line\n", ln + 1);
+			fprintf(stderr, "ERROR: %lu no such line\n", ln);
 			return 0;
 		}
 	}
@@ -43,7 +89,7 @@ iscommand(struct filemap * fm, const char ** argv)
 	if (!argv || !argv[0])
 		return -1;
 
-	for (i = 0; cmdmap[i].cmd; i++) {
+	for (i = 0; i < COMMANDMAPMAX; i++) {
 		if (!strncmp(cmdmap[i].cmd, argv[0], strlen(cmdmap[i].cmd)))
 			return cmdmap[i].fn(fm, argv);
 	}

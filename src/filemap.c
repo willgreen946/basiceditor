@@ -31,7 +31,8 @@ filemapinit(struct filemap * fm, const char * file)
 	/*
 	 * Read the file into memory
 	 */
-	if (!(fm->linevector = fdreadfile(fm->filedescriptor)))
+	if (!(fm->linevector = 
+		fdreadfile(fm->filedescriptor, fm->filesize, "r+w")))
 		return 1;
 
 	return 0;
