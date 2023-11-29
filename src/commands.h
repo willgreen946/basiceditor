@@ -4,26 +4,41 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
-#include "filemap.h"
+#include "eddata.h"
 
-enum { COMMANDMAPMAX = 4 };
+signed int cmdwrite(struct eddata *, const char **);
 
-signed int cmdinfo(struct filemap * fm, const char **);
+signed int cmdedit(struct eddata *, const char **);
 
-signed int cmdhead(struct filemap * fm, const char **);
+/*
+ * Prints information about the file to the screen
+ */
+signed int cmdinfo(struct eddata *, const char **);
 
-signed int cmdrange(struct filemap * fm, const char **);
+/*
+ * Prints out the first ten lines of a file
+ */
+signed int cmdhead(struct eddata *, const char **);
+
+/*
+ * Prints out a range of lines, say 1 - 10
+ */
+signed int cmdrange(struct eddata *, const char **);
 
 /*
  * Tries to convert string to integer and print the line
  */
-signed int cmdprint(struct filemap * fm, const char **);
+signed int cmdprint(struct eddata *, const char **);
 
 struct commandmap {
 	const char * cmd;
-	signed int (*fn) (struct filemap *, const char **);
+	signed int (*fn) (struct eddata *, const char **);
 };
 
-signed int iscommand(struct filemap *, const char **);
+/*
+ * Checks that a string is a valid command,
+ * If it is then it will call the function
+ */
+signed int iscommand(struct eddata *, const char **);
 
 #endif /* __COMMANDS_H__ */

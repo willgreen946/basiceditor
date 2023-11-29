@@ -3,14 +3,16 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include "filemap.h"
+#include <signal.h>
+#include "eddata.h"
 #include "commands.h"
 
 static int help(const char *);
 static int setup(const char **);
 static int scanargs(const char **);
-static int eventloop(struct filemap *);
-static int parseline(struct filemap *, char *);
+static void signalhandler(int);
+static int eventloop(struct eddata *);
+static int parseline(struct eddata *, char *);
 
 int
 main(int argc, const char ** argv)
@@ -34,10 +36,15 @@ help(const char * name)
 static int
 setup(const char ** argv)
 {
-	struct filemap fm;
+	struct eddata ed;
 
 	if (scanargs(argv))
 		return 1;
+
+	/*
+	 * Cancel ctrl + c and other signals
+	 */
+	signal(SIGINT, signalhandler);
 
 	/*
 	 * A loop for opening files
@@ -46,13 +53,13 @@ setup(const char ** argv)
 		if (**argv == '-')
 			; /* Skip */
 		else {
-			if (filemapinit(&fm, *argv))
+			if (eddatainit(&ed, *argv))
 				return 1;
 
-			if (eventloop(&fm))
+			if (eventloop(&ed))
 				return 1;
 
-			if (filemapdestroy(&fm))
+			if (eddatadestroy(&ed))
 				return 1;
 		}
 	}
@@ -89,11 +96,22 @@ scanargs(const char ** argv)
 	return 0;
 }
 
+static void
+signalhandler(int sig)
+{
+	switch (sig) {
+		case SIGINT:
+		case SIGQUIT:
+			fputs("'quit' to exit the editor\n", stderr);
+			break;
+	}
+}
+
 /*
  * Input loop
  */
 static int
-eventloop(struct filemap * fm)
+eventloop(struct eddata * ed)
 {
 	char buf[256];
 
@@ -105,11 +123,11 @@ eventloop(struct filemap * fm)
 			return 1;
 		}
 
-		if (*buf) {
+		if (*buf && *buf != '\n') {
 			if (!strncmp(buf, "quit", 4))
 				return 0;
 
-			if (parseline(fm, buf))
+			if (parseline(ed, buf))
 				return 1;
 		}	
 	}
@@ -118,7 +136,7 @@ eventloop(struct filemap * fm)
 }
 
 static int 
-parseline(struct filemap * fm, char * s)
+parseline(struct eddata * ed, char * s)
 {
 	char ** p;
 	char * argv[256];
@@ -134,7 +152,7 @@ parseline(struct filemap * fm, char * s)
 			p++;
 	}
 
-	if (iscommand(fm, (const char **) argv) < 0) 
+	if (iscommand(ed, (const char **) argv) < 0) 
 		fputs("No such command\n", stderr);
 
 	return 0;
