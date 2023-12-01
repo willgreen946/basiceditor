@@ -7,6 +7,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "fdctrl.h"
+#include "ttyctrl.h"
 
 struct eddata {
 	size_t linemax;
@@ -14,6 +16,7 @@ struct eddata {
 	int filedescriptor;
 	char ** linevector;
 	const char * filename;
+	struct ttystat ts;
 };
 
 int eddatainit(struct eddata *, const char *);

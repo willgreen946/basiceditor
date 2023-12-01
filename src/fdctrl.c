@@ -96,18 +96,40 @@ fdreadfile(int fd, off_t fsize, size_t * lmax, const char * mode)
 		*lmax = i + 1;
 	}
 
-	/*
-	 * Destroy file pointer
-	 */
-	/*if (fclose(fp) < 0) {
-		fprintf(stderr,
-			"ERROR: %s : %s\n",
-			__func__, strerror(errno));
-		return (char **) 0;
-	}*/
-
 	if (buf)
 		free(buf);
 
 	return linev;
+}
+
+/*
+ * Delete a file (kind of)
+ */
+signed int
+fdremovefile(const char * fn)
+{
+	if (unlink(fn) < 0) {
+		fprintf(stderr,
+			"ERROR: %s : %s\n",
+			__func__, strerror(errno));
+		return -1;
+	}
+
+	return 0;
+}
+
+/*
+ * Returns 1 if fn is the path to a file
+ */
+int
+fdisfile(const char * fn)
+{
+	if (access(fn, R_OK | W_OK) < 0) {
+		fprintf(stderr,
+			"ERROR: %s : %s\n",
+			__func__, strerror(errno));
+		return 1;
+	}
+
+	return 0;
 }

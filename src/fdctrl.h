@@ -19,4 +19,8 @@ off_t fdgetsize(int);
  */
 char ** fdreadfile(int, off_t, size_t *, const char *);
 
+signed int fdremovefile(const char *);
+
+int fdisfile(const char *);
+
 #endif /* __FDCTRL_H__ */

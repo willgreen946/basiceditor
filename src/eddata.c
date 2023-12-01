@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "fdctrl.h"
+#include "ttyctrl.h"
 #include "eddata.h"
 
 int

@@ -4,35 +4,52 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+#include <sys/ioctl.h>
 #include "eddata.h"
+#include "fdctrl.h"
+#include "ttyctrl.h"
+#include "conversion.h"
 
-signed int cmdwrite(struct eddata *, const char **);
+/*
+ * Clears the screen using ANSI clear
+ */
+void cmdclear(struct eddata *, const char **);
 
-signed int cmdedit(struct eddata *, const char **);
+/*
+ * Writes changes to the file
+ */
+void cmdwrite(struct eddata *, const char **);
+
+/*
+ * Edits a line in the file
+ */
+void cmdedit(struct eddata *, const char **);
 
 /*
  * Prints information about the file to the screen
  */
-signed int cmdinfo(struct eddata *, const char **);
+void cmdinfo(struct eddata *, const char **);
 
 /*
  * Prints out the first ten lines of a file
  */
-signed int cmdhead(struct eddata *, const char **);
+void cmdhead(struct eddata *, const char **);
 
 /*
  * Prints out a range of lines, say 1 - 10
  */
-signed int cmdrange(struct eddata *, const char **);
+void cmdrange(struct eddata *, const char **);
+
+void cmdfill(struct eddata *, const char **);
 
 /*
  * Tries to convert string to integer and print the line
  */
-signed int cmdprint(struct eddata *, const char **);
+void cmdprint(struct eddata *, const char **);
 
 struct commandmap {
 	const char * cmd;
-	signed int (*fn) (struct eddata *, const char **);
+	void (*fn) (struct eddata *, const char **);
 };
 
 /*

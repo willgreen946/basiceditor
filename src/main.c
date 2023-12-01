@@ -141,6 +141,7 @@ parseline(struct eddata * ed, char * s)
 	char ** p;
 	char * argv[256];
 
+	/* Remove newline char */
 	s[strlen(s) - 1] = '\0';
 
 	/*
@@ -153,7 +154,7 @@ parseline(struct eddata * ed, char * s)
 	}
 
 	if (iscommand(ed, (const char **) argv) < 0) 
-		fputs("No such command\n", stderr);
+		fputs("?\n", stderr);
 
 	return 0;
 }
